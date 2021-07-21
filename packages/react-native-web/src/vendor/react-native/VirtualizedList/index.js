@@ -473,10 +473,10 @@ class VirtualizedList extends React.PureComponent<Props, State> {
     ...
   }) {
     const {item} = params;
-    const {data, getItem, getItemCount} = this.props;
+    const {data, getItemCount} = this.props;
     const itemCount = getItemCount(data);
     for (let index = 0; index < itemCount; index++) {
-      if (getItem(data, index) === item) {
+      if (this._getItem(data, index) === item) {
         this.scrollToIndex({...params, index});
         break;
       }
@@ -606,6 +606,22 @@ class VirtualizedList extends React.PureComponent<Props, State> {
       horizontal: !!this.props.horizontal,
       parent: this.context?.debugInfo,
     };
+  }
+
+  _getItem = (data: any, index: number) => {
+    const {
+      inverted,
+      getItem,
+      getItemCount
+    }=this. props;
+    if(inverted){
+      let invertedIndex=getItemCount(data)-index-1;
+      var invertedItem= getItem(data,invertedIndex);
+      if(Array.isArray(invertedItem))
+        return invertedItem.reverse();
+      return invertedItem;
+    }
+    return getItem(data,index);
   }
 
   _getScrollMetrics = () => {
@@ -793,7 +809,6 @@ class VirtualizedList extends React.PureComponent<Props, State> {
       CellRendererComponent,
       ItemSeparatorComponent,
       data,
-      getItem,
       getItemCount,
       horizontal,
       keyExtractor,
@@ -803,7 +818,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
     let prevCellKey;
     last = Math.min(end, last);
     for (let ii = first; ii <= last; ii++) {
-      const item = getItem(data, ii);
+      const item = this._getItem(data, ii);
       const key = keyExtractor(item, ii);
       this._indicesToKeys.set(ii, key);
       if (stickyIndicesFromProps.has(ii + stickyOffset)) {
@@ -1748,8 +1763,8 @@ class VirtualizedList extends React.PureComponent<Props, State> {
   };
 
   _createViewToken = (index: number, isViewable: boolean) => {
-    const {data, getItem, keyExtractor} = this.props;
-    const item = getItem(data, index);
+    const {data, keyExtractor} = this.props;
+    const item = this._getItem(data, index);
     return {index, item, key: keyExtractor(item, index), isViewable};
   };
 
@@ -1788,7 +1803,6 @@ class VirtualizedList extends React.PureComponent<Props, State> {
   } => {
     const {
       data,
-      getItem,
       getItemCount,
       getItemLayout,
       keyExtractor,
@@ -1797,7 +1811,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
       getItemCount(data) > index,
       'Tried to get frame for out of range index ' + index,
     );
-    const item = getItem(data, index);
+    const item = this._getItem(data, index);
     let frame = item && this._frames[keyExtractor(item, index)];
     if (!frame || frame.index !== index) {
       if (getItemLayout) {
@@ -2048,10 +2062,10 @@ function describeNestedLists(childList: {
 
 const styles = StyleSheet.create({
   verticallyInverted: {
-    transform: [{scaleY: -1}],
+    //transform: [{scaleY: -1}],
   },
   horizontallyInverted: {
-    transform: [{scaleX: -1}],
+    //transform: [{scaleX: -1}],
   },
   row: {
     flexDirection: 'row',
